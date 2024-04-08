@@ -1,5 +1,6 @@
 package Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Node {
     private int id;
@@ -7,8 +8,8 @@ public class Node {
     private String data;  //Data of current Node
     private static int Val = 1;
     private final Node Next; //Point to Father-Node
-    private final ArrayList<Node> Parent; // A List of Nodes that pointing in to the kids-Node
-    private final ArrayList<Integer> KidIdNode; // Every Node contains an ArrayList with the ids of every child it has0,
+    private  ArrayList<Node> Parent; // A List of Nodes that pointing in to the kids-Node
+    private  ArrayList<Integer> KidIdNode; // Every Node contains an ArrayList with the ids of every child it has0,
     private final static Node Init = new Node(); //God of roots
     private String Blanks = "\t"; // Printing Tabs in output in order to make clear all kinds of a dynamic tree
 
@@ -25,8 +26,6 @@ public class Node {
 
     private Node(Node N) {
         this.Next = N;
-        this.Parent = N.Parent;
-        this.KidIdNode = N.KidIdNode;
     }
 
     public Node(String data) { // Use this Constructor if you want to create a new root
@@ -55,12 +54,63 @@ public class Node {
         Val++;
     }
 
+    public ArrayList<Integer> GetKidIDNode(){ return this.KidIdNode; }
+
     private String GetData() {
         return this.data;
     }
     private int GetId(){ return this.id; }
+    private int GetIdFromListKindNode(int pos){
+        try {
+            return this.KidIdNode.get(pos);
+        }catch (IndexOutOfBoundsException e){
+            System.out.println("Index Out Of Bounds Exception");
+        }
+        return -1;
+    }
     public Node GetNext() {
         return this.Next;
+    }
+
+    public void Sort(){
+        try {
+            for (int i = 0; i < this.KidIdNode.size(); i++) {
+                for (int j = i + 1; j < this.KidIdNode.size(); j++) {
+                    if (this.KidIdNode.get(i) > this.KidIdNode.get(j)) {
+                        Collections.swap(this.Parent, i, j);
+                        Collections.swap(this.KidIdNode, i, j);
+                    }
+                }
+            }
+        }catch(IndexOutOfBoundsException e){
+            System.out.println("Index out of bounds Exception");
+        }
+
+    }
+
+    private void ChangeId(){
+        Node NewN = new Node(this);
+        NewN = NewN.Next;
+        assert NewN != null;
+        try{
+            while(NewN.id != 0){
+                if(NewN.KidIdNode.size() > 1 && NewN.KidIdNode.size() % 2 == 0 ){
+                    NewN.Sort();
+                    int pos = (NewN.KidIdNode.size() / 2) - 1;
+                    if(NewN.KidIdNode.get(pos) > NewN.id) {
+                        int temp = NewN.id;
+                        NewN.id = NewN.Parent.get(pos).id;
+                        NewN.Parent.get(pos).id = temp;
+                        NewN.KidIdNode.remove(pos);
+                        NewN.KidIdNode.add(pos, temp);
+                    }
+                    NewN.Sort();
+                }
+                NewN = NewN.Next;
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     // Add a New Node in current tree
@@ -69,6 +119,7 @@ public class Node {
             Node NewN = new Node(Data, this);  // Create a new Node which points in its father
             this.KidIdNode.add(NewN.id);
             this.Parent.add(NewN); // Add a new Node in the List which pointing in the Kid-Nodes
+            this.ChangeId();
         }catch (NullPointerException e){
             System.out.println("Null Pointer Exception");
         }
@@ -88,7 +139,7 @@ public class Node {
             Node head = new Node(this); //Create a temporarily Node
             head = head.Next; // Force to point to Main Node
             assert head != null; // We make an assumption about head Node
-            System.out.println("|" + head.data + "|");
+            System.out.println("|" + head.data + "|" + " id : " + head.id);
             if(!head.GetParent().isEmpty()) {
                 for (int i = 0; i < head.Parent.size(); i++) { // Recursive loop for every Node in this Tree
                     System.out.print(head.Blanks);
